@@ -11,8 +11,9 @@ language: c
 
 env:
   global:
+    - DEBUG=yes
     - PREFIX="${HOME}/opt"
-    - CFLAGS="-I${PREFIX}/include"
+    - CFLAGS="-I${PREFIX}/include -fsanitize=address"
     - LDFLAGS="-L${PREFIX}/lib"
 
 matrix:
@@ -42,3 +43,4 @@ script:
   - make
   - ldd bin/vpnserver/vpnserver
   - dh build-arch
+  - bin/vpnserver/vpnserver --help
