@@ -14,7 +14,7 @@ env:
     - DEBUG=yes
     - PREFIX="${HOME}/opt"
     - CFLAGS="-I${PREFIX}/include -fsanitize=address"
-    - LDFLAGS="-L${PREFIX}/lib"
+    - LDFLAGS="-L${PREFIX}/lib -fsanitize=address"
 
 matrix:
   include:
