@@ -20,6 +20,17 @@ matrix:
     - env: OPENSSL_VERSION="1.1.0f"
       os: linux
       compiler: clang
+    - env: DESCRIPTION="experimental OpenWRT build"
+      os: linux
+      before_script:
+        - git clone https://github.com/openwrt/openwrt.git
+        - cd openwrt
+        - echo "src-git softethervpn https://github.com/Andy2244/openwrt-extra.git" >> feeds.conf.default
+        - ./scripts/feeds update
+        - ./scripts/feeds install softethervpn
+        - make defconfig
+      script:
+        - make package/softethervpn/compile PKG_SOURCE_COMMIT=${TRAVIS_COMMIT} V=99 -j1 V=s
     - os: osx
       compiler: clang
       cache:
