@@ -31,8 +31,8 @@ before_install:
 script:
   - export OPENSSL_ROOT_DIR=${OPENSSL_INSTALL_DIR}
   - export LD_LIBRARY_PATH="${HOME}/opt/lib:${LD_LIBRARY_PATH:-}"
-  - export CFLAGS="-I${HOME}/opt/include -fsanitize-coverage=trace-pc-guard,indirect-calls,trace-cmp,trace-gep,trace-div,pc-table,edge"
-  - export LDFLAGS="-L${HOME}/opt/lib"
+  - export CFLAGS="-I${HOME}/opt/include -fsanitize=memory"
+  - export LDFLAGS="-L${HOME}/opt/lib -fsanitize=memory"
   - ./configure
   - make -C tmp
   - ldd bin/vpnserver/vpnserver
