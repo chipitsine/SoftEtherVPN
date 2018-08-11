@@ -8,33 +8,17 @@ env:
 
 matrix:
   include:
-    - env: OPENSSL_VERSION="1.0.2o" BUILD_DEB="1"
+    - env: OPENSSL_VERSION="1.0.2o" CC=clang-5.0 CXX=clang++-5.0
       os: linux
       compiler: gcc
-    - env: OPENSSL_VERSION="1.1.0f"
-      os: linux
-      compiler: gcc
-    - env: OPENSSL_VERSION="1.0.2o"
-      os: linux
-      compiler: clang
-    - env: OPENSSL_VERSION="1.1.0f"
-      os: linux
-      compiler: clang
-    - os: osx
-      compiler: clang
-      cache:
-        directories:
-        - ${HOME}/Library/Caches/Homebrew
-      before_install:
-        - brew update && brew upgrade
-      script:
-        - ./configure
-        - make -C tmp
-        - otool -L bin/vpnserver/vpnserver
 
 addons:
   apt:
-    packages: [ debhelper, devscripts, fakeroot, cmake3, dh-exec ]
+    update: true
+    sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-trusty-5.0
+    packages: [ g++-7, clang-5.0, debhelper, devscripts, fakeroot, cmake3, dh-exec ]
 
 cache:
   directories:
@@ -47,7 +31,7 @@ before_install:
 script:
   - export OPENSSL_ROOT_DIR=${OPENSSL_INSTALL_DIR}
   - export LD_LIBRARY_PATH="${HOME}/opt/lib:${LD_LIBRARY_PATH:-}"
-  - export CFLAGS="-I${HOME}/opt/include"
+  - export CFLAGS="-I${HOME}/opt/include -fsanitize-coverage=trace-pc-guard,indirect-calls,trace-cmp,trace-gep,trace-div,pc-table,edge"
   - export LDFLAGS="-L${HOME}/opt/lib"
   - ./configure
   - make -C tmp
