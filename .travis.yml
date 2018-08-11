@@ -31,10 +31,9 @@ before_install:
 script:
   - export OPENSSL_ROOT_DIR=${OPENSSL_INSTALL_DIR}
   - export LD_LIBRARY_PATH="${HOME}/opt/lib:${LD_LIBRARY_PATH:-}"
-  - export CFLAGS="-I${HOME}/opt/include -fsanitize=memory"
+  - export CFLAGS="-I${HOME}/opt/include -fsanitize=memory -ggdb"
   - export LDFLAGS="-L${HOME}/opt/lib -fsanitize=memory"
   - export CC=clang-5.0 CXX=clang++-5.0
   - ./configure
   - make -C tmp
   - ldd bin/vpnserver/vpnserver
-  - if [ "${BUILD_DEB}" = "1" ]; then make package -C tmp; fi
