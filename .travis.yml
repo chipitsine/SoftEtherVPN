@@ -22,7 +22,7 @@ matrix:
       compiler: clang
     - env: DESCRIPTION="experimental OpenWRT build"
       os: linux
-      before_script:
+      before_install:
         - git clone https://github.com/openwrt/openwrt.git
         - cd openwrt
         - echo "src-git softethervpn https://github.com/Andy2244/openwrt-extra.git" >> feeds.conf.default
