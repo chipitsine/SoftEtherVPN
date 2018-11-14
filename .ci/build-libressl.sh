@@ -13,8 +13,7 @@ build_libressl () {
         tar zxf "download-cache/libressl-${LIBRESSL_VERSION}.tar.gz"
         cd "libressl-${LIBRESSL_VERSION}/"
         ./configure --prefix="${OPENSSL_INSTALL_DIR}"
-        make -j $(nproc || sysctl -n hw.ncpu || echo 4) all
-        make  install
+        make -j $(nproc || sysctl -n hw.ncpu || echo 4) all install
         echo "${LIBRESSL_VERSION}" > "${OPENSSL_INSTALL_DIR}/.openssl-version"
     fi
 }
