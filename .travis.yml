@@ -24,7 +24,7 @@ matrix:
       os: linux
       compiler: gcc
       before_install:
-        - bash .ci/build-libressl.sh > build-deps.log 2>&1 || (cat build-deps.log && exit 1)
+        - bash .ci/build-libressl.sh
     - env: LABEL="check stb files"
       os: linux
       language: csharp
