@@ -1477,6 +1477,7 @@ void OvsFreeChannel(OPENVPN_CHANNEL *c)
 	if (c->ClientCert.X != NULL)
 	{
 		FreeX(c->ClientCert.X);
+		c->ClientCert.X = NULL;
 	}
 
 	Free(c);
