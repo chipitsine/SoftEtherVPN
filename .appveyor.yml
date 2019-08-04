@@ -41,6 +41,9 @@ for:
       name: PDBs (x86)
     - path: "%APPVEYOR_PROJECT_NAME%_%APPVEYOR_BUILD_VERSION%_Windows_x64_%CONFIGURATION%_PDBs-vs2015.zip"
       name: PDBs (x64)
+  on_failure:
+    - ps: cd $env:APPVEYOR_BUILD_FOLDER
+    - ps: ls src\bin\vpn_debug
 -
   matrix:
     only:
@@ -63,6 +66,9 @@ for:
       name: Release
     - path: "%APPVEYOR_PROJECT_NAME%_%APPVEYOR_BUILD_VERSION%_Windows_x64_%CONFIGURATION%_PDBs-vs2017.zip"
       name: PDBs
+  on_failure:
+    - ps: cd $env:APPVEYOR_BUILD_FOLDER
+    - ps: ls src\bin\vpn_debug
 -
   matrix:
     only:

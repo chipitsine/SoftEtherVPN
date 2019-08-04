@@ -16,6 +16,8 @@ jobs:
   - powershell: |
      . .ci\appveyor-vpntest.ps1
   - powershell: |
+     ls src\bin\vpn_debug
+  - powershell: |
      New-Item -Path '$(build.artifactstagingdirectory)/publish' -ItemType Directory
   - task: CopyFiles@2
     inputs:
