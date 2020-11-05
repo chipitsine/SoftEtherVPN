@@ -304,6 +304,7 @@ UINT Release(REF *ref)
 		DeleteCounter(ref->c);
 		ref->c = 0;
 		Free(ref);
+		ref = NULL;
 	}
 	return c;
 }
