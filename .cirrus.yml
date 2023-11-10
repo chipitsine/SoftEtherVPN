@@ -12,6 +12,7 @@ FreeBSD_task:
       image_family: freebsd-13-2
   prepare_script:
     - pkg install -y pkgconf cmake git libsodium $SSL
+    - pkg search openssl31
     - git submodule update --init --recursive
   configure_script:
     - ./configure
