@@ -15,7 +15,8 @@ FreeBSD_task:
     - pkg search openssl31
     - git submodule update --init --recursive
     - which openssl
-    - openssl version -a 
+    - openssl version -a
+    - openssl list -providers
   configure_script:
     - ./configure
   build_script:
