@@ -33,6 +33,6 @@ jobs:
         make -C build
     - name: clang-tidy
       run: |
-        run-clang-tidy
+        cd build && run-clang-tidy
  
 
