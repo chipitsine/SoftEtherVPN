@@ -25,10 +25,14 @@ jobs:
         submodules: true
     - name: Install dependencies
       run: |
-        dnf -y install git cmake ncurses-devel openssl-devel-engine libsodium-devel readline-devel zlib-devel gcc-c++ clang
+        dnf -y install git cmake ncurses-devel openssl-devel-engine libsodium-devel readline-devel zlib-devel gcc-c++ clang clang-tools-extra
     - name: Compile with ${{ matrix.cc }}
       run: |
         export CC=${{ matrix.cc }}
-        ./configure
+        CMAKE_FLAGS="-DCMAKE_EXPORT_COMPILE_COMMANDS=ON" ./configure
         make -C build
+    - name: clang-tidy
+      run: |
+        run-clang-tidy
+ 
 
