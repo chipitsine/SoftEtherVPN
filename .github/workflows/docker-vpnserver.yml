@@ -11,13 +11,7 @@ on:
 
 jobs:
   docker:
-    strategy:
-      matrix:
-        variant: [
-          { name: amd64, platform: "linux/amd64", repo: "chipitsine/vpnserver" },
-          { name: arm64, platform: "linux/arm64", repo: "chipitsine/vpnserver-arm64" }
-        ]
-    name: vpnserver/${{ matrix.variant.name }}
+    name: vpnserver
     runs-on: ubuntu-latest
     #if: ${{ github.repository_owner == 'SoftEtherVPN' }}
     steps:
@@ -26,7 +20,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ matrix.variant.repo }}
+          images: chipitsine/vpnserver
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=pr
@@ -54,6 +48,6 @@ jobs:
           file: ./Dockerfile
           target: vpnserver
           push: ${{ github.event_name != 'pull_request' }}
-          platforms: ${{ matrix.variant.platform }}
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

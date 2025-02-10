@@ -11,13 +11,7 @@ on:
 
 jobs:
   docker-vpnbridge:
-    strategy:
-      matrix:
-        variant: [
-          { name: amd64, platform: "linux/amd64", repo: "chipitsine/vpnbridge" },
-          { name: arm64, platform: "linux/arm64", repo: "chipitsine/vpnbridge-arm64" }
-        ]
-    name: vpnbridge/${{ matrix.variant.name }}
+    name: vpnbridge
     runs-on: ubuntu-latest
     #if: ${{ github.repository_owner == 'SoftEtherVPN' }}
     steps:
@@ -26,7 +20,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ matrix.variant.repo }}
+          images: chipitsine/vpnbridge
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=pr
@@ -53,7 +47,7 @@ jobs:
         with:
           file: ./Dockerfile
           target: vpnbridge
-          platforms: ${{ matrix.variant.platform }}
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
