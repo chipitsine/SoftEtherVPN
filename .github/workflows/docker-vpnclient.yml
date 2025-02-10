@@ -14,12 +14,12 @@ jobs:
     strategy:
       matrix:
         variant: [
-          { name: amd64, platform: "linux/amd64", repo: "softethervpn/vpnclient" },
-          { name: arm64, platform: "linux/arm64", repo: "softethervpn/vpnclient-arm64" }
+          { name: amd64, platform: "linux/amd64", repo: "chipitsine/vpnclient" },
+          { name: arm64, platform: "linux/arm64", repo: "chipitsine/vpnclient-arm64" }
         ]
     name: vpnclient/${{ matrix.variant.name }}
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'SoftEtherVPN' }}
+    #if: ${{ github.repository_owner == 'SoftEtherVPN' }}
     steps:
       -
         name: Docker meta
