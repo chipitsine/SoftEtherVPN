@@ -29,6 +29,6 @@ jobs:
     - name: Compile with ${{ matrix.cc }}
       run: |
         export CC=${{ matrix.cc }}
-        CMAKE_FLAGS="-DUSE_SYSTEM_CPU_FEATURES=1" ./configure
+        CMAKE_FLAGS="-DUSE_SYSTEM_CPU_FEATURES=1" CFLAGS="-I/usr/include/cpu_features" ./configure
         make -C build
 
