@@ -7770,9 +7770,9 @@ void SiCalledDeleteIpTable(SERVER *s, PACK *p)
 
 	LockList(h->IpTable);
 	{
-		if (IsInList(h->IpTable, (void *)key))
+		if (IsInListKey(h->IpTable, key))
 		{
-			IP_TABLE_ENTRY *e = (IP_TABLE_ENTRY *)key;
+			IP_TABLE_ENTRY *e = ListKeyToPointer(h->IpTable, key);
 			Delete(h->IpTable, e);
 			Free(e);
 		}
