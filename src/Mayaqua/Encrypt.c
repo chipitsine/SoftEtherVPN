@@ -2265,6 +2265,8 @@ bool Asn1TimeToSystem(SYSTEMTIME *s, void *asn1_time)
 {
 	ASN1_TIME *t;
 	struct tm tm_value;
+	int len;
+	const unsigned char *str;
 	// Validate arguments
 	if (s == NULL || asn1_time == NULL)
 	{
@@ -2277,6 +2279,14 @@ bool Asn1TimeToSystem(SYSTEMTIME *s, void *asn1_time)
 		return false;
 	}
 
+# if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	str = ASN1_STRING_get0_data((ASN1_STRING *)t);
+	len = ASN1_STRING_length((ASN1_STRING *)t);
+# else
+	str = t->data;
+	len = t->length;
+# endif
+
 	Zero(s, sizeof(SYSTEMTIME));
 	s->wYear = (USHORT)(tm_value.tm_year + 1900);
 	s->wMonth = (USHORT)(tm_value.tm_mon + 1);
@@ -2285,17 +2295,10 @@ bool Asn1TimeToSystem(SYSTEMTIME *s, void *asn1_time)
 	s->wMinute = (USHORT)tm_value.tm_min;
 	s->wSecond = (USHORT)tm_value.tm_sec;
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-	if (ASN1_TIME_get_type(t) == V_ASN1_GENERALIZEDTIME)
+	if (str != NULL && len >= 15)
 	{
 		LocalToSystem(s, s);
 	}
-#else
-	if (t->type == V_ASN1_GENERALIZEDTIME)
-	{
-		LocalToSystem(s, s);
-	}
-#endif
 
 	return true;
 }
