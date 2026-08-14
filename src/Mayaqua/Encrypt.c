@@ -15,6 +15,7 @@
 #include "Str.h"
 
 #include <string.h>
+#include <time.h>
 
 #include <openssl/crypto.h>
 #include <openssl/ssl.h>
@@ -40,9 +41,8 @@
 #include <openssl/pem.h>
 #include <openssl/conf.h>
 #include <openssl/x509v3.h>
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L && OPENSSL_VERSION_NUMBER < 0x40000000L
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined(OPENSSL_NO_PROVIDER)
 #include <openssl/provider.h>
-// OpenSSL 4 does not require the oqsprovider compatibility path.
 #ifndef SKIP_OQS_PROVIDER
 	extern OSSL_provider_init_fn oqs_provider_init;
 #endif
@@ -91,7 +91,7 @@ LOCK *openssl_lock = NULL;
 
 int ssl_clientcert_index = 0;
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined(OPENSSL_NO_PROVIDER)
 static OSSL_PROVIDER *ossl_provider_legacy = NULL;
 static OSSL_PROVIDER *ossl_provider_default = NULL;
 static OSSL_PROVIDER *ossl_provider_oqsprovider = NULL;
@@ -2278,17 +2278,24 @@ bool Asn1TimeToSystem(SYSTEMTIME *s, void *asn1_time)
 	}
 
 	Zero(s, sizeof(SYSTEMTIME));
-	s->wYear = (WORD)(tm_value.tm_year + 1900);
-	s->wMonth = (WORD)(tm_value.tm_mon + 1);
-	s->wDay = (WORD)tm_value.tm_mday;
-	s->wHour = (WORD)tm_value.tm_hour;
-	s->wMinute = (WORD)tm_value.tm_min;
-	s->wSecond = (WORD)tm_value.tm_sec;
+	s->wYear = (USHORT)(tm_value.tm_year + 1900);
+	s->wMonth = (USHORT)(tm_value.tm_mon + 1);
+	s->wDay = (USHORT)tm_value.tm_mday;
+	s->wHour = (USHORT)tm_value.tm_hour;
+	s->wMinute = (USHORT)tm_value.tm_min;
+	s->wSecond = (USHORT)tm_value.tm_sec;
 
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 	if (ASN1_TIME_get_type(t) == V_ASN1_GENERALIZEDTIME)
 	{
 		LocalToSystem(s, s);
 	}
+#else
+	if (t->type == V_ASN1_GENERALIZEDTIME)
+	{
+		LocalToSystem(s, s);
+	}
+#endif
 
 	return true;
 }
@@ -2876,11 +2883,11 @@ wchar_t *GetUniStrFromX509Name(void *xn, int nid)
 	{
 		return NULL;
 	}
-	if (data->type == V_ASN1_BMPSTRING)
+	if (ASN1_STRING_type(data) == V_ASN1_BMPSTRING)
 	{
 		unicode = true;
 	}
-	if (data->type == V_ASN1_UTF8STRING || data->type == V_ASN1_T61STRING)
+	if (ASN1_STRING_type(data) == V_ASN1_UTF8STRING || ASN1_STRING_type(data) == V_ASN1_T61STRING)
 	{
 		is_utf_8 = true;
 	}
@@ -4018,7 +4025,7 @@ void FreeCryptLibrary()
 #endif
 #endif
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined(OPENSSL_NO_PROVIDER)
 	if (ossl_provider_default != NULL)
 	{
 		OSSL_PROVIDER_unload(ossl_provider_default);
@@ -4055,7 +4062,7 @@ void InitCryptLibrary()
 	SSL_load_error_strings();
 #endif
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L && !defined(OPENSSL_NO_PROVIDER)
 	// OpenSSL 4 does not use the oqsprovider integration; load the default
 	// providers for 3.x/4.x, but keep OQS enabled only on the 3.x branch.
 	ossl_provider_default = OSSL_PROVIDER_load(NULL, "default");
