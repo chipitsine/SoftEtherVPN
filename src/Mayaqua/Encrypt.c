@@ -40,9 +40,9 @@
 #include <openssl/pem.h>
 #include <openssl/conf.h>
 #include <openssl/x509v3.h>
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L && OPENSSL_VERSION_NUMBER < 0x40000000L
 #include <openssl/provider.h>
-// Static oqsprovider initialization function
+// OpenSSL 4 does not require the oqsprovider compatibility path.
 #ifndef SKIP_OQS_PROVIDER
 	extern OSSL_provider_init_fn oqs_provider_init;
 #endif
@@ -4012,15 +4012,21 @@ void InitCryptLibrary()
 #endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-	ossl_provider_default = OSSL_PROVIDER_load(NULL, "legacy");
-	ossl_provider_legacy = OSSL_PROVIDER_load(NULL, "default");
+	// OpenSSL 4 does not use the oqsprovider integration; load the default
+	// providers for 3.x/4.x, but keep OQS enabled only on the 3.x branch.
+	ossl_provider_default = OSSL_PROVIDER_load(NULL, "default");
+	ossl_provider_legacy = OSSL_PROVIDER_load(NULL, "legacy");
 
-	char *oqs_provider_name = "oqsprovider";
-	#ifndef SKIP_OQS_PROVIDER
-		// Registers "oqsprovider" as a provider -- necessary because oqsprovider is built in now.
-		OSSL_PROVIDER_add_builtin(NULL, oqs_provider_name, oqs_provider_init); 
+	#if OPENSSL_VERSION_NUMBER < 0x40000000L
+		#ifndef SKIP_OQS_PROVIDER
+			char *oqs_provider_name = "oqsprovider";
+			if (oqs_provider_init != NULL)
+			{
+				OSSL_PROVIDER_add_builtin(NULL, oqs_provider_name, oqs_provider_init);
+				ossl_provider_oqsprovider = OSSL_PROVIDER_load(NULL, oqs_provider_name);
+			}
+		#endif
 	#endif
-	ossl_provider_oqsprovider = OSSL_PROVIDER_load(NULL, oqs_provider_name);
 #endif
 
 	ssl_clientcert_index = SSL_get_ex_new_index(0, "struct SslClientCertInfo *", NULL, NULL, NULL);
