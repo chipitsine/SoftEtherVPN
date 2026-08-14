@@ -104,6 +104,64 @@ static bool openssl_inited = false;
 static UINT Internal_HMac(const EVP_MD *md, void *dest, void *key, UINT key_size, const void *src, const UINT src_size);
 static void Internal_Sha0(unsigned char *dest, const unsigned char *src, const UINT size);
 
+static bool SetX509SerialNumber(X509 *x509, const X_SERIAL *serial)
+{
+	ASN1_INTEGER *s;
+	unsigned char zero = 0;
+
+	if (x509 == NULL)
+	{
+		return false;
+	}
+
+	s = X509_get_serialNumber(x509);
+	if (s == NULL)
+	{
+		return false;
+	}
+
+	if (serial == NULL)
+	{
+		return ASN1_STRING_set((ASN1_STRING *)s, &zero, 1) == 1;
+	}
+
+	return ASN1_STRING_set((ASN1_STRING *)s, serial->data, (int)serial->size) == 1;
+}
+
+static X_SERIAL *GetX509SerialNumber(X509 *x509)
+{
+	ASN1_INTEGER *s;
+	const unsigned char *data;
+	int size;
+	char zero = 0;
+
+	if (x509 == NULL)
+	{
+		return NULL;
+	}
+
+	s = X509_get_serialNumber(x509);
+	if (s == NULL)
+	{
+		return NULL;
+	}
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	data = ASN1_STRING_get0_data((ASN1_STRING *)s);
+	size = ASN1_STRING_length((ASN1_STRING *)s);
+#else
+	data = s->data;
+	size = s->length;
+#endif
+
+	if (data == NULL || size <= 0)
+	{
+		return NewXSerial(&zero, sizeof(char));
+	}
+
+	return NewXSerial((void *)data, (UINT)size);
+}
+
 // For the callback function
 typedef struct CB_PARAM
 {
@@ -1795,20 +1853,10 @@ X509 *NewX509(K *pub, K *priv, X *ca, NAME *name, UINT days, X_SERIAL *serial)
 	FreeX509Name(subject_name);
 
 	// Set the Serial Number
-	s = X509_get_serialNumber(x509);
-	OPENSSL_free(s->data);
-	if (serial == NULL)
+	if (SetX509SerialNumber(x509, serial) == false)
 	{
-		char zero = 0;
-		s->data = OPENSSL_malloc(sizeof(char));
-		Copy(s->data, &zero, sizeof(char));
-		s->length = sizeof(char);
-	}
-	else
-	{
-		s->data = OPENSSL_malloc(serial->size);
-		Copy(s->data, serial->data, serial->size);
-		s->length = serial->size;
+		FreeX509(x509);
+		return NULL;
 	}
 
 	/*
@@ -1938,20 +1986,10 @@ X509 *NewRootX509(K *pub, K *priv, NAME *name, UINT days, X_SERIAL *serial)
 	FreeX509Name(issuer_name);
 
 	// Set a Serial Number
-	s = X509_get_serialNumber(x509);
-	OPENSSL_free(s->data);
-	if (serial == NULL)
+	if (SetX509SerialNumber(x509, serial) == false)
 	{
-		char zero = 0;
-		s->data = OPENSSL_malloc(sizeof(char));
-		Copy(s->data, &zero, sizeof(char));
-		s->length = sizeof(char);
-	}
-	else
-	{
-		s->data = OPENSSL_malloc(serial->size);
-		Copy(s->data, serial->data, serial->size);
-		s->length = serial->size;
+		FreeX509(x509);
+		return NULL;
 	}
 
 	// Extensions
@@ -3741,8 +3779,7 @@ X *X509ToX(X509 *x509)
 	}
 
 	// Get the Serial Number
-	s = X509_get_serialNumber(x509);
-	x->serial = NewXSerial(s->data, s->length);
+	x->serial = GetX509SerialNumber(x509);
 	if (x->serial == NULL)
 	{
 		char zero = 0;
