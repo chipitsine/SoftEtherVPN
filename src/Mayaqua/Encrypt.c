@@ -2217,14 +2217,12 @@ bool SystemToAsn1Time(void *asn1_time, SYSTEMTIME *s)
 	{
 		return false;
 	}
+
 	t = (ASN1_TIME *)asn1_time;
-	if (t->data == NULL || t->length < sizeof(tmp))
+	if (ASN1_TIME_set_string(t, tmp) == 0)
 	{
-		t->data = OPENSSL_malloc(sizeof(tmp));
+		return false;
 	}
-	StrCpy((char *)t->data, t->length, tmp);
-	t->length = StrLen(tmp);
-	t->type = V_ASN1_UTCTIME;
 
 	return true;
 }
@@ -2266,6 +2264,7 @@ UINT64 Asn1TimeToUINT64(void *asn1_time)
 bool Asn1TimeToSystem(SYSTEMTIME *s, void *asn1_time)
 {
 	ASN1_TIME *t;
+	struct tm tm_value;
 	// Validate arguments
 	if (s == NULL || asn1_time == NULL)
 	{
@@ -2273,12 +2272,20 @@ bool Asn1TimeToSystem(SYSTEMTIME *s, void *asn1_time)
 	}
 
 	t = (ASN1_TIME *)asn1_time;
-	if (StrToSystem(s, (char *)t->data) == false)
+	if (ASN1_TIME_to_tm(t, &tm_value) == 0)
 	{
 		return false;
 	}
 
-	if (t->type == V_ASN1_GENERALIZEDTIME)
+	Zero(s, sizeof(SYSTEMTIME));
+	s->wYear = (WORD)(tm_value.tm_year + 1900);
+	s->wMonth = (WORD)(tm_value.tm_mon + 1);
+	s->wDay = (WORD)tm_value.tm_mday;
+	s->wHour = (WORD)tm_value.tm_hour;
+	s->wMinute = (WORD)tm_value.tm_min;
+	s->wSecond = (WORD)tm_value.tm_sec;
+
+	if (ASN1_TIME_get_type(t) == V_ASN1_GENERALIZEDTIME)
 	{
 		LocalToSystem(s, s);
 	}
