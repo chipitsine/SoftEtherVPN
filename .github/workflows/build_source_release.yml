@@ -22,7 +22,9 @@ jobs:
         VERSION=${{ github.event.release.tag_name }}
         PKGNAME="SoftEtherVPN-$VERSION"
         mkdir -p /tmp/$PKGNAME
+        shopt -s dotglob
         mv * /tmp/$PKGNAME
+        shopt -u dotglob
         mv /tmp/$PKGNAME .
         TARBALL=$PKGNAME.tar.xz
         tar cJf $TARBALL $PKGNAME
